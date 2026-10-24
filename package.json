@@ -1,0 +1,14 @@
+{
+  "name": "claude-stream-statusline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A compact Claude Code status line with measured stream throughput.",
+  "license": "MIT",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node --test test/*.test.cjs test/*.test.mjs",
+    "setup": "node scripts/install.cjs",
+    "remove": "node scripts/uninstall.cjs"
+  }
+}

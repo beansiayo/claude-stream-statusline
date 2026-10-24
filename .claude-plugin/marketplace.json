@@ -1,0 +1,11 @@
+{
+  "name": "stream-statusline-local",
+  "owner": { "name": "Claude Stream Statusline contributors" },
+  "plugins": [
+    {
+      "name": "stream-speed",
+      "source": "./plugins/stream-speed",
+      "description": "Last completed response throughput measured from streaming events."
+    }
+  ]
+}
