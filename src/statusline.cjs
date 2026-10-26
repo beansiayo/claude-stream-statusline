@@ -166,11 +166,15 @@ function lastReplySpeed(transcriptPath, id) {
   if (typeof sessionId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(sessionId)) return null;
   try {
     const record = JSON.parse(fs.readFileSync(path.join(CONFIG_DIR, 'stream-speed', sessionId + '.json'), 'utf8'));
-    if (record.version !== 1 || record.sessionId !== sessionId) return null;
+    if (record.version !== 2 || record.sessionId !== sessionId) return null;
+    if (['burst', 'insufficient', 'unavailable', 'interrupted'].includes(record.status)) return { status: record.status };
     const sample = record.sample;
+    const timing = record.timing;
+    if (record.status !== 'observed' || !timing || !(num(timing.outputSpanSeconds) >= 0.5)
+      || !(num(timing.deltaCount) >= 3) || !(num(timing.spacedGaps) >= 2)) return null;
     if (!sample || !(num(sample.tokens) > 0) || !(num(sample.seconds) > 0)) return null;
     const tps = sample.tokens / sample.seconds;
-    return Number.isFinite(tps) ? { ...sample, tps } : null;
+    return Number.isFinite(tps) ? { status: 'observed', ...sample, tps } : null;
   } catch { return null; }
 }
 
@@ -328,9 +332,11 @@ function render(raw) {
     : `${S.label}cache${RESET} ${cachePct == null ? S.faint : cacheColor(cachePct)}${cacheRead == null ? '—' : tok(cacheRead)}${
         cachePct != null ? ' (' + cachePct.toFixed(0) + '%)' : ''
       }${RESET}`;
-  const speedSeg = speed
-    ? `${Math.round(speed.tps) >= FAST_TPS ? S.good : S.warn}${speed.tps.toFixed(0)} tok/s${RESET}`
-    : `${S.faint}— tok/s${RESET}`;
+  const speedSeg = speed?.status === 'observed'
+    ? `${Math.round(speed.tps) >= FAST_TPS ? S.good : S.warn}${speed.tps.toFixed(0)} recv tok/s${RESET}`
+    : speed && ['burst', 'insufficient'].includes(speed.status)
+      ? `${S.warn}n/a tok/s (${speed.status === 'burst' ? 'burst' : 'sparse'})${RESET}`
+      : `${S.faint}— tok/s${RESET}`;
 
   // ---- fit one row, dropping the least useful parts first --------------
   let head = [modelSeg, effortSeg, dirSeg, branchSeg].filter(Boolean);
