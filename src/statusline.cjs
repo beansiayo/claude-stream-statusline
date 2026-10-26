@@ -333,7 +333,7 @@ function render(raw) {
         cachePct != null ? ' (' + cachePct.toFixed(0) + '%)' : ''
       }${RESET}`;
   const speedSeg = speed?.status === 'observed'
-    ? `${Math.round(speed.tps) >= FAST_TPS ? S.good : S.warn}${speed.tps.toFixed(0)} recv tok/s${RESET}`
+    ? `${Math.round(speed.tps) >= FAST_TPS ? S.good : S.warn}${speed.tps.toFixed(0)} tok/s${RESET}`
     : speed && ['burst', 'insufficient'].includes(speed.status)
       ? `${S.warn}n/a tok/s (${speed.status === 'burst' ? 'burst' : 'sparse'})${RESET}`
       : `${S.faint}— tok/s${RESET}`;
